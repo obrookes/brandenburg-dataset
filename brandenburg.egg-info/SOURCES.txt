@@ -1,8 +1,0 @@
-README.md
-setup.py
-brandenburg.egg-info/PKG-INFO
-brandenburg.egg-info/SOURCES.txt
-brandenburg.egg-info/dependency_links.txt
-brandenburg.egg-info/top_level.txt
-brandenburg_dataset/__init__.py
-brandenburg_dataset/dataset.py

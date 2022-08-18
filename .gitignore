@@ -6,4 +6,4 @@ data/*
 *.AVI
 *.jpg
 .idea/*
-brandenburg.egg/*
+brandenburg.egg*
