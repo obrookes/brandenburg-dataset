@@ -1,10 +1,6 @@
-import os
 import json
 import mmcv
 import torch
-import pickle
-import torchaudio
-import torchvision
 from tqdm import tqdm
 from PIL import Image
 from glob import glob
@@ -21,7 +17,6 @@ class BrandenburgDataset(Dataset):
     def __init__(
         self,
         data_dir: str = None,
-        ann_dir: str = None,
         sequence_len: int = None,
         sample_itvl: int = None,
         stride: int = None,
@@ -30,8 +25,7 @@ class BrandenburgDataset(Dataset):
         super(BrandenburgDataset, self).__init__()
 
         self.data_path = data_dir
-        self.ann_path = ann_dir
-        self.data = glob(f"{data_dir}/**/*.MP4", recursive=True)
+        self.data = glob(f"{data_dir}/**/*.mp4", recursive=True)
 
         # Frame offset
         self.offset = 5
@@ -61,9 +55,10 @@ class BrandenburgDataset(Dataset):
     def check_animal_exists(self, ann, frame_no, current_animal):
         animal = False
         frame = self.get_frame(ann, frame_no)
-        for d in frame["detections"]:
-            if d["id"] == current_animal:
-                animal = True
+        if frame is not None:
+            for d in frame["detections"]:
+                if d["id"] == current_animal:
+                    animal = True
         return animal
 
     def check_sufficient_animals(self, ann, current_ape, frame_no):
@@ -89,7 +84,7 @@ class BrandenburgDataset(Dataset):
 
     def get_animal_ids(self, annotation):
         animal_ids = []
-        for frame in annotation["images"]:
+        for frame in annotation["annotations"]:
             for d in frame["detections"]:
                 if d["id"] not in animal_ids:
                     animal_ids.append(d["id"])
@@ -126,7 +121,7 @@ class BrandenburgDataset(Dataset):
             animal_ids = self.get_animal_ids(annotation)
             no_of_animals = animal_ids
 
-            if not animal_ids:
+            if animal_ids == []:
                 break
 
             for current_animal in range(0, no_of_animals + 1):
@@ -163,9 +158,7 @@ class BrandenburgDataset(Dataset):
                             correct_animal = False
 
                             for temporal_frame in range(
-                                valid_frame_no,
-                                self.total_seq_len,
-                                self.offset
+                                valid_frame_no, self.total_seq_len, self.offset
                             ):
                                 animal = self.check_ape_exists(
                                     annotation, temporal_frame, current_animal
@@ -210,7 +203,7 @@ class BrandenburgDataset(Dataset):
                 current_index += 1
 
     def get_frame(self, annotation, frame_idx):
-        for frame in annotation["images"]:
+        for frame in annotation["annotations"]:
             if frame["frame_id"] == frame_idx:
                 return frame
 
@@ -228,17 +221,17 @@ class BrandenburgDataset(Dataset):
 
         video = mmcv.VideoReader(video_path)
         dims = (video.width, video.height)
-
         base_path = "/".join(video_path.split("/")[:-1])
         annotation = self.load_annotation(base_path)
 
         spatial_sample = []
-        for i in range(0, self.total_seq_len, 5):
+        for i in range(0, self.total_seq_len, self.sample_itvl * self.offset):
             frame = video[frame_idx + i]
             spatial_img = Image.fromarray(frame)
-            coords = self.normalised_xywh_to_xywh(
-                self.get_coords(annotation, animal_id, frame_idx), dims
+            coords = list(
+                map(float, self.get_coords(annotation, animal_id, frame_idx + i))
             )
+            coords = self.normalised_xywh_to_xywh(coords, dims)
             coords = list(map(int, coords))
             cropped_img = spatial_img.crop(coords)
             spatial_data = self.transform(cropped_img)
