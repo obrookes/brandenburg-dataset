@@ -12,6 +12,32 @@ from torchvision.transforms.functional import resize
 class BrandenburgDataset(Dataset):
     """
     Base class for Brandenburg Dataset
+
+    Args:
+
+     Paths:
+         data_dir: Path to parent dir containing video files and annotations.
+
+     Sample building:
+         sequence_len: Number of frames in each sample. The output tensor
+         will have shape (B x C x T x W x H) where B = batch_size, C = channels,
+         T = sequence_len, W = width and H = height.
+
+         sample_itvl: Number of frames between each sample frame i.e., if
+         sample_itvl = 1 consecutive frames are sampled, if sample_itvl = i
+         every i'th frame is sampled.
+
+         *Note if sequence_len = 5 and sample_itvl = 2, the output tensor will
+         be of shape (B x C x 5 x H x W).
+
+         stride: Number of frames between samples. By default, this is
+         sequence_len x sample_itvl. This means samples are built consecutively
+         and without overlap. If the stride is manually set to a lower value
+         samples will be generated with overlapping frames i.e., samples built
+         with sequence_len = 20 and stride = 10 will have a 10-frame overlap.
+
+     Transform:
+         transform: List of transforms to be applied.
     """
 
     def __init__(
