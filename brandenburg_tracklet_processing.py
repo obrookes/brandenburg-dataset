@@ -6,6 +6,9 @@ import os
 def sort_data():
     for d in os.listdir(data_dir):
         if '.' not in d:
+            if ' ' in d:
+                os.rename(data_dir + '/' + d, data_dir + '/' + d.replace(' ', '_'))
+                d = d.replace(' ', '_')
             conts = os.listdir(data_dir + '/' + d)
             curr_dir = data_dir + '/' + d
             organise_directory(conts, curr_dir)
