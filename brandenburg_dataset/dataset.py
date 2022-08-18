@@ -51,7 +51,9 @@ class BrandenburgDataset(Dataset):
         super(BrandenburgDataset, self).__init__()
 
         self.data_path = data_dir
-        self.data = glob(f"{data_dir}/**/*.MP4", recursive=True)
+        mp4 = glob(f"{data_dir}/**/*.MP4", recursive=True)
+        avi = glob(f"{data_dir}/**/*.AVI", recursive=True)
+        self.data = mp4 + avi
 
         # Frame offset
         self.offset = 5
