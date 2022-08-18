@@ -5,3 +5,5 @@ data/*
 *.avi
 *.AVI
 *.jpg
+.idea/*
+brandenburg.egg/*
