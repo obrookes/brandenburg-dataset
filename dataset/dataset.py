@@ -25,7 +25,6 @@ class BrandenburgDataset(Dataset):
         sequence_len: int = None,
         sample_itvl: int = None,
         stride: int = None,
-        split: str = None,
         transform: Optional[Callable] = None,
     ):
         super(BrandenburgDataset, self).__init__()
@@ -53,7 +52,6 @@ class BrandenburgDataset(Dataset):
         else:
             self.stride = stride
 
-        self.split = split
         self.transform = transform
         self.samples = {}
         self.labels = 0
@@ -167,6 +165,7 @@ class BrandenburgDataset(Dataset):
                             for temporal_frame in range(
                                 valid_frame_no,
                                 self.total_seq_len,
+                                self.offset
                             ):
                                 animal = self.check_ape_exists(
                                     annotation, temporal_frame, current_animal
