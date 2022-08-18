@@ -51,7 +51,7 @@ class BrandenburgDataset(Dataset):
         super(BrandenburgDataset, self).__init__()
 
         self.data_path = data_dir
-        self.data = glob(f"{data_dir}/**/*.mp4", recursive=True)
+        self.data = glob(f"{data_dir}/**/*.MP4", recursive=True)
 
         # Frame offset
         self.offset = 5
@@ -103,8 +103,8 @@ class BrandenburgDataset(Dataset):
             samples += len(self.samples[video])
         return samples
 
-    def load_annotation(self, base_path):
-        with open(f"{base_path}/results.json", "rb") as handle:
+    def load_annotation(self, path):
+        with open(path, "rb") as handle:
             annotation = json.load(handle)
             return annotation
 
@@ -116,9 +116,9 @@ class BrandenburgDataset(Dataset):
                     animal_ids.append(d["id"])
         return max(animal_ids)
 
-    def get_label(self, base_path):
+    def get_label(self, path):
         """split path and extract label as lowercase."""
-        label = "_".join([x.lower() for x in base_path.split("/")[1].split(" ")])
+        label = "_".join([x.lower() for x in path.split("/")[1].split(" ")])
         return label
 
     def get_valid_frames(self, ann, current_animal, frame_no, no_of_frames):
@@ -137,9 +137,9 @@ class BrandenburgDataset(Dataset):
         for data in tqdm(self.data):
 
             video = mmcv.VideoReader(data)
-            base_path = "/".join(data.split("/")[:-1])
-            annotation = self.load_annotation(base_path)
-            label = self.get_label(base_path)
+            annotation_path = data.split('.')[0] + '_track.json'
+            annotation = self.load_annotation(annotation_path)
+            label = self.get_label(annotation_path)
 
             # Check no of frames match
             no_of_frames = len(video)
@@ -244,11 +244,10 @@ class BrandenburgDataset(Dataset):
         return animal["bbox"]
 
     def build_spatial_sample(self, video_path, animal_id, frame_idx):
-
         video = mmcv.VideoReader(video_path)
         dims = (video.width, video.height)
-        base_path = "/".join(video_path.split("/")[:-1])
-        annotation = self.load_annotation(base_path)
+        annotation_path = video_path.split(".")[0] + "_track.json"
+        annotation = self.load_annotation(annotation_path)
 
         spatial_sample = []
         for i in range(0, self.total_seq_len, self.sample_itvl * self.offset):
@@ -257,7 +256,6 @@ class BrandenburgDataset(Dataset):
             coords = list(
                 map(float, self.get_coords(annotation, animal_id, frame_idx + i))
             )
-            coords = self.normalised_xywh_to_xywh(coords, dims)
             coords = list(map(int, coords))
             cropped_img = spatial_img.crop(coords)
             spatial_data = self.transform(cropped_img)
