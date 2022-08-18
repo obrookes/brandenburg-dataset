@@ -4,8 +4,7 @@ import os
 
 
 def sort_data():
-    dir = os.listdir(data_dir)
-    for d in dir:
+    for d in os.listdir(data_dir):
         if '.' not in d:
             conts = os.listdir(data_dir + '/' + d)
             curr_dir = data_dir + '/' + d
@@ -37,9 +36,7 @@ def organise_directory(conts, curr_dir):
 
 
 def make_tracklets(make_vid):
-    dir = os.listdir(data_dir)
-    root = os.path.dirname(os.path.dirname(data_dir))
-    for d in dir:
+    for d in os.listdir(data_dir):
         if '.' not in d:
             os.chdir(data_dir + '/' + d)
             print("Creating tracking information for " + d)
@@ -61,8 +58,6 @@ def make_tracklets(make_vid):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Training')
-    parser.add_argument('--data_dir', type=str,
-                        help='path to Brandenburg data directory')
     parser.add_argument('-make_video', type=bool, help='Generate a new video displaying the tracklet')
     parser.add_argument('--make_video', action='store_true')
     parser.set_defaults(make_video=False)
@@ -70,8 +65,16 @@ def parse_args():
     return parser.parse_args()
 
 
+def find_dataset():
+    data_root = os.listdir(root + '/data')
+    for d in data_root:
+        if 'Brandenburg' in d:
+            return root + "/data/" + d
+
+
 if __name__ == '__main__':
     args = parse_args()
-    data_dir = args.data_dir
+    root = os.getcwd()
+    data_dir = find_dataset()
     sort_data()
     make_tracklets(args.make_video)
