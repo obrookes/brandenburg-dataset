@@ -41,12 +41,12 @@ class BrandenburgDataset(Dataset):
     """
 
     def __init__(
-        self,
-        data_dir: str = None,
-        sequence_len: int = None,
-        sample_itvl: int = None,
-        stride: int = None,
-        transform: Optional[Callable] = None,
+            self,
+            data_dir: str = None,
+            sequence_len: int = None,
+            sample_itvl: int = None,
+            stride: int = None,
+            transform: Optional[Callable] = None,
     ):
         super(BrandenburgDataset, self).__init__()
 
@@ -72,7 +72,7 @@ class BrandenburgDataset(Dataset):
             # This leaves no overlap between samples
             self.stride = self.total_seq_len
         else:
-            self.stride = stride
+            self.stride = stride * self.offset
 
         self.transform = transform
         self.samples = {}
@@ -145,8 +145,8 @@ class BrandenburgDataset(Dataset):
         for data in tqdm(self.data):
 
             video = mmcv.VideoReader(data)
-            split = data.split('/videos/')
-            annotation_path = split[0] + '/tracks/json/' + split[1].split('.')[0] + '_track.json'
+            split = data.split('/data/')
+            annotation_path = f"{split[0]}/annotations/{split[1].split('.')[0]}_track.json"
             annotation = self.load_annotation(annotation_path)
             label = self.get_label(annotation_path)
 
@@ -165,7 +165,7 @@ class BrandenburgDataset(Dataset):
 
                 while frame_no <= len(video):
                     if (
-                        len(video) - frame_no
+                            len(video) - frame_no
                     ) < self.total_seq_len:  # TODO: check equality symbol is correct
                         break
 
@@ -184,16 +184,16 @@ class BrandenburgDataset(Dataset):
                     last_valid_frame = frame_no + valid_frames
 
                     for valid_frame_no in range(
-                        frame_no, last_valid_frame, self.stride
+                            frame_no, last_valid_frame, self.stride
                     ):
                         if (
-                            valid_frame_no + max(self.total_seq_len, self.stride)
-                            >= last_valid_frame
+                                valid_frame_no + max(self.total_seq_len, self.stride)
+                                >= last_valid_frame
                         ):
                             correct_animal = False
 
                             for temporal_frame in range(
-                                valid_frame_no, self.total_seq_len, self.offset
+                                    valid_frame_no, self.total_seq_len, self.offset
                             ):
                                 animal = self.check_animal_exists(
                                     annotation, temporal_frame, current_animal
@@ -243,20 +243,27 @@ class BrandenburgDataset(Dataset):
                 return frame
 
     def get_animal(self, frame, id):
-        for d in frame["detections"]:
-            if d["id"] == id:
-                return d
+        try:
+            for d in frame["detections"]:
+                if d["id"] == id:
+                    return d
+        except:
+            print()
 
     def get_coords(self, annotation, animal_id, frame_idx):
         frame = self.get_frame(annotation, frame_idx)
-        animal = self.get_animal(frame, animal_id)
+        try:
+            animal = self.get_animal(frame, animal_id)
+        except:
+            print()
         return animal["bbox"]
 
     def build_spatial_sample(self, video_path, animal_id, frame_idx):
         video = mmcv.VideoReader(video_path)
         dims = (video.width, video.height)
-        split = video_path.split('/videos/')
-        annotation_path = split[0] + '/tracks/json/' + split[1].split('.')[0] + '_track.json'
+        split = video_path.split('/data/')
+
+        annotation_path = f"{split[0]}/annotations/{split[1].split('.')[0]}_track.json"
         annotation = self.load_annotation(annotation_path)
 
         spatial_sample = []

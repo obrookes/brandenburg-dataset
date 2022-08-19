@@ -2,7 +2,6 @@ import os
 from typing import Optional
 from torch.utils.data import DataLoader
 from pytorch_lightning import LightningDataModule
-from panaf.datasets import SupervisedPanAf
 from torchvision import transforms
 from configparser import NoOptionError
 from brandenburg_dataset.dataset import BrandenburgDataset

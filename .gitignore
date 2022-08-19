@@ -1,5 +1,6 @@
 /data*
 /test*
+/panaf*
 test.py
 .DS_Store
 *.mp4
@@ -9,4 +10,5 @@ test.py
 *.jpg
 .idea/*
 brandenburg.egg*
+config.cfg
 
