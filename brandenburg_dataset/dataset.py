@@ -188,7 +188,7 @@ class BrandenburgDataset(Dataset):
                             for temporal_frame in range(
                                 valid_frame_no, self.total_seq_len, self.offset
                             ):
-                                animal = self.check_ape_exists(
+                                animal = self.check_animal_exists(
                                     annotation, temporal_frame, current_animal
                                 )
 
