@@ -76,6 +76,7 @@ class BrandenburgDataset(Dataset):
 
         self.transform = transform
         self.samples = {}
+        self.class_dict = {}
         self.labels = 0
         self.initialise_dataset()
         self.samples_by_video = {}
@@ -116,12 +117,17 @@ class BrandenburgDataset(Dataset):
             for d in frame["detections"]:
                 if d["id"] not in animal_ids:
                     animal_ids.append(d["id"])
-        return max(animal_ids)
+        if animal_ids:
+            return max(animal_ids)
+        else:
+            return []
 
     def get_label(self, path):
         """split path and extract label as lowercase."""
-        label = "_".join([x.lower() for x in path.split("/")[1].split(" ")])
-        return label
+        animal = path.split(self.data_path + '/')[-1].split('/')[0].lower()
+        if animal not in self.class_dict.keys():
+            self.class_dict[animal] = len(self.class_dict)
+        return self.class_dict[animal]
 
     def get_valid_frames(self, ann, current_animal, frame_no, no_of_frames):
         valid_frames = 0
@@ -139,7 +145,8 @@ class BrandenburgDataset(Dataset):
         for data in tqdm(self.data):
 
             video = mmcv.VideoReader(data)
-            annotation_path = data.split('.')[0] + '_track.json'
+            split = data.split('/videos/')
+            annotation_path = split[0] + '/tracks/json/' + split[1].split('.')[0] + '_track.json'
             annotation = self.load_annotation(annotation_path)
             label = self.get_label(annotation_path)
 
@@ -150,7 +157,7 @@ class BrandenburgDataset(Dataset):
             no_of_animals = animal_ids
 
             if animal_ids == []:
-                break
+                continue
 
             for current_animal in range(0, no_of_animals + 1):
 
@@ -188,7 +195,7 @@ class BrandenburgDataset(Dataset):
                             for temporal_frame in range(
                                 valid_frame_no, self.total_seq_len, self.offset
                             ):
-                                animal = self.check_ape_exists(
+                                animal = self.check_animal_exists(
                                     annotation, temporal_frame, current_animal
                                 )
 
@@ -248,7 +255,8 @@ class BrandenburgDataset(Dataset):
     def build_spatial_sample(self, video_path, animal_id, frame_idx):
         video = mmcv.VideoReader(video_path)
         dims = (video.width, video.height)
-        annotation_path = video_path.split(".")[0] + "_track.json"
+        split = video_path.split('/videos/')
+        annotation_path = split[0] + '/tracks/json/' + split[1].split('.')[0] + '_track.json'
         annotation = self.load_annotation(annotation_path)
 
         spatial_sample = []

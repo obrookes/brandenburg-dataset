@@ -362,7 +362,11 @@ def main():
     for video in tqdm.tqdm(videos):
         if 'DS_Store' not in video:
             results_file = f"{args.detection_path}/{video}".split('.')[0] + '.json'
+
+            # If MegaDetector has no detections, generate an empty tracking file
             if not check_res(results_file):
+                final = {'video': video, 'annotations': []}
+                write_out(args, final, video)
                 continue
 
             formatted_results = format_brand_results(results_file)
@@ -382,19 +386,22 @@ def main():
             # process_tracklets
             final = process_tracklets(id_tracklets, confidence, video, vid_dims)
 
-            ## Write to PKL.
-            if 'pkl' not in os.listdir(f"{args.outpath}"):
-                os.mkdir(f"{args.outpath}/pkl")
-                os.mkdir(f"{args.outpath}/json")
-            outfile = f"{args.outpath}/pkl/{re.split('.mp4|.MP4|.avi|.AVI', video.split('/')[-1])[0]}_track.pkl"
-            with open(outfile, 'wb') as handle:
-                pickle.dump(final, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            write_out(args, final, video)
 
-            ## Write to JSON.
-            outfile = f"{args.outpath}/json/{re.split('.mp4|.MP4|.avi|.AVI', video.split('/')[-1])[0]}_track.json"
-            json_obj = json.loads(json.dumps(final, default=str))
-            with open(outfile, 'w', encoding='utf-8') as handle:
-                json.dump(json_obj, handle, ensure_ascii=False, indent=4)
+
+def write_out(args, final, video):
+    ## Write to PKL.
+    if 'pkl' not in os.listdir(f"{args.outpath}"):
+        os.mkdir(f"{args.outpath}/pkl")
+        os.mkdir(f"{args.outpath}/json")
+    outfile = f"{args.outpath}/pkl/{re.split('.mp4|.MP4|.avi|.AVI', video.split('/')[-1])[0]}_track.pkl"
+    with open(outfile, 'wb') as handle:
+        pickle.dump(final, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    ## Write to JSON.
+    outfile = f"{args.outpath}/json/{re.split('.mp4|.MP4|.avi|.AVI', video.split('/')[-1])[0]}_track.json"
+    json_obj = json.loads(json.dumps(final, default=str))
+    with open(outfile, 'w', encoding='utf-8') as handle:
+        json.dump(json_obj, handle, ensure_ascii=False, indent=4)
 
 
 if __name__ == '__main__':

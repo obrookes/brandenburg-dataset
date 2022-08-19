@@ -1,4 +1,5 @@
 import argparse
+import configparser
 import glob
 import os
 
@@ -45,8 +46,12 @@ def make_tracklets(make_vid):
             print("Creating tracking information for " + d)
             os.system("python "
                       + root + "/brandenburg-tracking/track.py \
-                        --detection_path=detections --video_path=videos --l_confidence=0.25 --h_confidence=0.85 \
-                        --iou=0.45 --length=24 --outpath=tracks --animal_class=" + d.lower())
+                        --detection_path=detections --video_path=videos " +
+                      " --l_confidence=" + cfg.get('tracking', 'l_confidence') +
+                      " --h_confidence=" + cfg.get('tracking', 'h_confidence') +
+                      " --iou=" + cfg.get('tracking', 'iou') +
+                      " --length=" + cfg.get('tracking', 'length') +
+                      " --outpath=tracks --animal_class=" + d.lower())
 
             if make_vid:
                 for track in os.listdir(os.getcwd() + '/tracks/pkl'):
@@ -60,7 +65,8 @@ def make_tracklets(make_vid):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Training')
+    parser = argparse.ArgumentParser(description='Pre-Processing')
+    parser.add_argument("--config", type=str, required=True)
     parser.add_argument('-make_video', type=bool, help='Generate a new video displaying the tracklet')
     parser.add_argument('--make_video', action='store_true')
     parser.set_defaults(make_video=False)
@@ -77,6 +83,9 @@ def find_dataset():
 
 if __name__ == '__main__':
     args = parse_args()
+    cfg = configparser.ConfigParser()
+    cfg.read(args.config)
+
     root = os.getcwd()
     data_dir = find_dataset()
     sort_data()
