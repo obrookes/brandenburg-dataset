@@ -4,18 +4,7 @@ The Brandeburg Dataset comprises camera trap videos of European wildife.
 
 ## What can be found here?
 
-brandenburg-dataset: A PyTorch dataset class for the Brandenburg Dataset.
-brandenburg-tracking: Python scripts to generate tracking information
-data: Directory in which to place the Brandenburg dataset
-
-## Basic pre-processing
-This will sort the data from the Brandenburg dataset and generate tracklet information for all animal classes.  
-Parameters to be passed through to `/brandenburg-tracking/track.py` can be set in a standard config file.  
-The `--make_video` option will generate videos showing the bounding boxes generated as part of the tracking.
-
-```bash
-python brandenburg_tracklet_processing.py --config=$PATH_TO_CONFIG {OPTIONAL --make_video}
-```
+A PyTorch dataset class for the Brandenburg Dataset.
 
 ## Basic usage
 
