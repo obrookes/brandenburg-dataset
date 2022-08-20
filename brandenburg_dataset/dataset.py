@@ -51,6 +51,7 @@ class BrandenburgDataset(Dataset):
         super(BrandenburgDataset, self).__init__()
 
         self.data_path = data_dir
+        self.annotation_path = f"{data_dir.replace('/data/', '/annotations/')}"
         mp4 = glob(f"{data_dir}/**/*.MP4", recursive=True)
         avi = glob(f"{data_dir}/**/*.AVI", recursive=True)
         self.data = mp4 + avi
@@ -145,8 +146,8 @@ class BrandenburgDataset(Dataset):
         for data in tqdm(self.data):
 
             video = mmcv.VideoReader(data)
-            split = data.split('/data/')
-            annotation_path = f"{split[0]}/annotations/{split[1].split('.')[0]}_track.json"
+            title = data.split('/')[-1].split('.')[0]
+            annotation_path = f"{self.annotation_path}/{title}_track.json"
             annotation = self.load_annotation(annotation_path)
             label = self.get_label(annotation_path)
 
@@ -243,27 +244,22 @@ class BrandenburgDataset(Dataset):
                 return frame
 
     def get_animal(self, frame, id):
-        try:
-            for d in frame["detections"]:
-                if d["id"] == id:
-                    return d
-        except:
-            print()
+        for d in frame["detections"]:
+            if d["id"] == id:
+                return d
+
 
     def get_coords(self, annotation, animal_id, frame_idx):
         frame = self.get_frame(annotation, frame_idx)
-        try:
-            animal = self.get_animal(frame, animal_id)
-        except:
-            print()
+        animal = self.get_animal(frame, animal_id)
         return animal["bbox"]
 
     def build_spatial_sample(self, video_path, animal_id, frame_idx):
         video = mmcv.VideoReader(video_path)
         dims = (video.width, video.height)
-        split = video_path.split('/data/')
-
-        annotation_path = f"{split[0]}/annotations/{split[1].split('.')[0]}_track.json"
+        title = video_path.split('/')[-1].split('.')[0]
+        annotation_path = f"{self.annotation_path}/{title}_track.json"
+        annotation = self.load_annotation(annotation_path)
         annotation = self.load_annotation(annotation_path)
 
         spatial_sample = []
