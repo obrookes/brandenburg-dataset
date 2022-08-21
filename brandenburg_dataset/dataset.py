@@ -307,6 +307,7 @@ class BrandenburgDataset(Dataset):
         return sample
 
     def __getitem__(self, index):
+        sample = dict()
         id, species, start_frame, video = self.find_sample(index)
-        sample = self.build_spatial_sample(video, id, start_frame)
+        sample["spatial_sample"] = self.build_spatial_sample(video, id, start_frame)
         return sample, species
