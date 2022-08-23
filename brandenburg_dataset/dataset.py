@@ -50,6 +50,7 @@ class BrandenburgDataset(Dataset):
     ):
         super(BrandenburgDataset, self).__init__()
 
+        self.root_dir = data_dir.split('/data/')[0]
         self.data_path = data_dir
         self.annotation_path = f"{data_dir.replace('/data/', '/annotations/')}"
         mp4 = glob(f"{data_dir}/**/*.MP4", recursive=True)
@@ -77,10 +78,14 @@ class BrandenburgDataset(Dataset):
 
         self.transform = transform
         self.samples = {}
-        self.class_dict = {}
+        self.species_dict = self.load_species_dict()
         self.labels = 0
         self.initialise_dataset()
         self.samples_by_video = {}
+
+    def load_species_dict(self):
+        with open(self.root_dir + '/species_dict.json', 'rb') as f:
+            return json.load(f)
 
     def check_animal_exists(self, ann, frame_no, current_animal):
         animal = False
@@ -123,13 +128,6 @@ class BrandenburgDataset(Dataset):
         else:
             return []
 
-    def get_label(self, path):
-        """split path and extract label as lowercase."""
-        animal = path.split(self.data_path + '/')[-1].split('/')[0].lower()
-        if animal not in self.class_dict.keys():
-            self.class_dict[animal] = len(self.class_dict)
-        return self.class_dict[animal]
-
     def get_valid_frames(self, ann, current_animal, frame_no, no_of_frames):
         valid_frames = 0
 
@@ -149,7 +147,7 @@ class BrandenburgDataset(Dataset):
             title = data.split('/')[-1].split('.')[0]
             annotation_path = f"{self.annotation_path}/{title}_track.json"
             annotation = self.load_annotation(annotation_path)
-            label = self.get_label(annotation_path)
+            label = self.species_dict[annotation['species']]
 
             # Check no of frames match
             no_of_frames = len(video)
