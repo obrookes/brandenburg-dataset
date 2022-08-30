@@ -4,7 +4,7 @@ The Brandeburg Dataset comprises camera trap videos of European wildife.
 
 ## What can be found here?
 
-This is a PyTorch dataset class for the Brandenburg Dataset.
+A PyTorch dataset class for the Brandenburg Dataset.
 
 ## Basic usage
 
