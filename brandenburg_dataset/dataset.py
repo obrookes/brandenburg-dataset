@@ -254,10 +254,8 @@ class BrandenburgDataset(Dataset):
 
     def build_spatial_sample(self, video_path, animal_id, frame_idx):
         video = mmcv.VideoReader(video_path)
-        dims = (video.width, video.height)
         title = video_path.split('/')[-1].split('.')[0]
         annotation_path = f"{self.annotation_path}/{title}_track.json"
-        annotation = self.load_annotation(annotation_path)
         annotation = self.load_annotation(annotation_path)
 
         spatial_sample = []
