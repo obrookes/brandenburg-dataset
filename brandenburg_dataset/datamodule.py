@@ -89,6 +89,7 @@ class BrandenburgDataModule(LightningDataModule):
             shuffle=self.train_shuffle,
             num_workers=self.num_workers,
             pin_memory=self.pin_memory,
+            drop_last=True
         )
         return train_loader
 
@@ -99,6 +100,7 @@ class BrandenburgDataModule(LightningDataModule):
             shuffle=self.test_shuffle,
             num_workers=self.num_workers,
             pin_memory=self.pin_memory,
+            drop_last=True
         )
         return validation_loader
 
@@ -109,5 +111,6 @@ class BrandenburgDataModule(LightningDataModule):
             shuffle=self.test_shuffle,
             num_workers=self.num_workers,
             pin_memory=self.pin_memory,
+            drop_last=True
         )
         return test_loader
